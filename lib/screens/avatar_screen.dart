@@ -8,20 +8,23 @@ class AvatarScreen extends StatefulWidget {
 }
 
 class _AvatarScreenState extends State<AvatarScreen> {
-  // Steps: 0 = Gender, 1 = Method, 2 = Input
+  // Steps: 0 = Gender, 1 = Age, 2 = Method, 3 = Input
   int _currentStep = 0;
 
   // Store user choices
   String? _selectedGender;
+  double _selectedAge = 22; // Default to target demographic (Gen Z)
   String? _selectedMethod;
 
   @override
   Widget build(BuildContext context) {
+    // Calculate progress based on 4 steps
+    double progress = (_currentStep + 1) / 4;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Your Avatar'),
         centerTitle: true,
-        // Show Back button only if we are past the first step
         leading: _currentStep > 0
             ? IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -38,12 +41,12 @@ class _AvatarScreenState extends State<AvatarScreen> {
           children: [
             // Top Progress Bar
             LinearProgressIndicator(
-              value: (_currentStep + 1) / 3,
+              value: progress,
               backgroundColor: Colors.grey[800],
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
             ),
 
-            // Main Content Area (Expands to fill space)
+            // Main Content Area
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -51,7 +54,7 @@ class _AvatarScreenState extends State<AvatarScreen> {
               ),
             ),
 
-            // Bottom Navigation Area (Next Button)
+            // Bottom Navigation Area
             _buildBottomBar(),
           ],
         ),
@@ -66,15 +69,17 @@ class _AvatarScreenState extends State<AvatarScreen> {
       case 0:
         return _buildGenderStep();
       case 1:
-        return _buildMethodStep();
+        return _buildAgeStep();
       case 2:
+        return _buildMethodStep();
+      case 3:
         return _buildInputStep();
       default:
         return const Center(child: Text("Error"));
     }
   }
 
-  // STEP 1: GENDER SELECTION (UPDATED)
+  // STEP 1: GENDER SELECTION (Icons Removed)
   Widget _buildGenderStep() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,17 +95,66 @@ class _AvatarScreenState extends State<AvatarScreen> {
         ),
         const SizedBox(height: 40),
 
-        // Selection List
-        _buildGenderOption("Male", Icons.male),
+        // Selectable Rectangles (No Icons passed)
+        _buildGenderTile("Male"),
         const SizedBox(height: 15),
-        _buildGenderOption("Female", Icons.female),
+        _buildGenderTile("Female"),
         const SizedBox(height: 15),
-        _buildGenderOption("Other", Icons.transgender),
+        _buildGenderTile("Other"),
       ],
     );
   }
 
-  // STEP 2: METHOD SELECTION
+  // STEP 2: AGE SELECTION
+  Widget _buildAgeStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "How old are you?",
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          "This helps us adjust the avatar's body proportions.",
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+        const SizedBox(height: 60),
+
+        Center(
+          child: Column(
+            children: [
+              Text(
+                "${_selectedAge.round()}",
+                style: const TextStyle(
+                    fontSize: 60,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent
+                ),
+              ),
+              const Text("years old"),
+            ],
+          ),
+        ),
+        const SizedBox(height: 40),
+
+        Slider(
+          value: _selectedAge,
+          min: 13,
+          max: 80,
+          divisions: 67,
+          activeColor: Colors.blueAccent,
+          onChanged: (double value) {
+            setState(() {
+              _selectedAge = value;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  // STEP 3: METHOD SELECTION
   Widget _buildMethodStep() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,7 +187,7 @@ class _AvatarScreenState extends State<AvatarScreen> {
     );
   }
 
-  // STEP 3: INPUT (Placeholder)
+  // STEP 4: INPUT (Placeholder)
   Widget _buildInputStep() {
     return Center(
       child: Column(
@@ -157,8 +211,8 @@ class _AvatarScreenState extends State<AvatarScreen> {
 
   // --- WIDGET HELPER FUNCTIONS ---
 
-  // Custom Widget for Gender Choice
-  Widget _buildGenderOption(String label, IconData icon) {
+  // RECTANGLE TILE BUILDER (Updated: Removed Icon Parameter)
+  Widget _buildGenderTile(String label) {
     bool isSelected = _selectedGender == label;
 
     return GestureDetector(
@@ -168,37 +222,38 @@ class _AvatarScreenState extends State<AvatarScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blueAccent.withOpacity(0.2) : Colors.grey[900],
+          color: isSelected ? Colors.blueAccent.withOpacity(0.1) : Colors.transparent,
           border: Border.all(
-            color: isSelected ? Colors.blueAccent : Colors.transparent,
+            color: isSelected ? Colors.blueAccent : Colors.grey[700]!,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? Colors.blueAccent : Colors.white),
-            const SizedBox(width: 15),
+            // REMOVED: Icon widget was here
             Text(
               label,
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 color: isSelected ? Colors.blueAccent : Colors.white,
               ),
             ),
             const Spacer(),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: Colors.blueAccent),
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              color: isSelected ? Colors.blueAccent : Colors.grey,
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Custom Widget for Method Choice
+  // Helper for Method Choice
   Widget _buildMethodOption({
     required String id,
     required String title,
@@ -216,9 +271,9 @@ class _AvatarScreenState extends State<AvatarScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.purpleAccent.withOpacity(0.2) : Colors.grey[900],
+          color: isSelected ? Colors.purpleAccent.withOpacity(0.1) : Colors.transparent,
           border: Border.all(
-            color: isSelected ? Colors.purpleAccent : Colors.transparent,
+            color: isSelected ? Colors.purpleAccent : Colors.grey[700]!,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -262,41 +317,48 @@ class _AvatarScreenState extends State<AvatarScreen> {
   Widget _buildBottomBar() {
     bool isNextEnabled = false;
 
-    // Logic to decide if Next button is clickable
     if (_currentStep == 0 && _selectedGender != null) isNextEnabled = true;
-    if (_currentStep == 1 && _selectedMethod != null) isNextEnabled = true;
-    if (_currentStep == 2) isNextEnabled = true; // Always enabled for last step for now
+    if (_currentStep == 1) isNextEnabled = true;
+    if (_currentStep == 2 && _selectedMethod != null) isNextEnabled = true;
+    if (_currentStep == 3) isNextEnabled = true;
 
     return Container(
       padding: const EdgeInsets.all(20),
       child: SizedBox(
-        width: double.infinity, // Full width button
-        height: 50,
+        width: double.infinity,
+        height: 56,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blueAccent,
             foregroundColor: Colors.white,
-            disabledBackgroundColor: Colors.grey[800],
-            disabledForegroundColor: Colors.grey[500],
+            disabledBackgroundColor: Colors.grey[900],
+            disabledForegroundColor: Colors.grey[600],
+            elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
           onPressed: isNextEnabled
               ? () {
-            if (_currentStep < 2) {
+            if (_currentStep < 3) {
               setState(() {
                 _currentStep++;
               });
             } else {
-              // Final step action
-              print("Finished: Gender=$_selectedGender, Method=$_selectedMethod");
+              print("Finished: Gender=$_selectedGender, Age=${_selectedAge.round()}, Method=$_selectedMethod");
             }
           }
-              : null, // Disable button if selection is null
-          child: Text(
-            _currentStep == 2 ? "Create Avatar" : "Next",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              : null,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _currentStep == 3 ? "Create Avatar" : "Next",
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.arrow_forward_rounded, size: 24),
+            ],
           ),
         ),
       ),

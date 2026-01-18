@@ -48,10 +48,10 @@ class _MainWrapperState extends State<MainWrapper> {
   Widget build(BuildContext context) {
     return Scaffold(
       // The AppBar is the title bar at the top
-      appBar: AppBar(
-        title: const Text('Drape Prototype'),
-        centerTitle: true,
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Drape Prototype'),
+      //   centerTitle: true,
+      // ),
 
       // The 'body' changes based on which tab is selected
       body: _screens[_currentIndex],
