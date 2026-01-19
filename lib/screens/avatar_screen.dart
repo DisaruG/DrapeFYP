@@ -8,17 +8,36 @@ class AvatarScreen extends StatefulWidget {
 }
 
 class _AvatarScreenState extends State<AvatarScreen> {
+  // Navigation State
   // Steps: 0 = Gender, 1 = Age, 2 = Method, 3 = Input
   int _currentStep = 0;
 
-  // Store user choices
+  // User Data State
   String? _selectedGender;
-  double _selectedAge = 22; // Default to target demographic (Gen Z)
+  double _selectedAge = 22;
   String? _selectedMethod;
+
+  // Detailed Measurement Data (Defaults based on average sizes)
+  double _heightVal = 170;   // cm
+  double _weightVal = 65;    // kg
+  double _chestVal = 90;     // cm
+  double _waistVal = 75;     // cm
+  double _shoulderVal = 40;  // cm
+
+  Color _selectedSkinColor = const Color(0xFFF5D0A9);
+
+  // Skin Tone Options
+  final List<Color> _skinTones = [
+    const Color(0xFFF5D0A9), // Light
+    const Color(0xFFE0AC69), // Medium Light
+    const Color(0xFFC68642), // Medium
+    const Color(0xFF8D5524), // Medium Dark
+    const Color(0xFF583E2A), // Dark
+    const Color(0xFF2E1D13), // Very Dark
+  ];
 
   @override
   Widget build(BuildContext context) {
-    // Calculate progress based on 4 steps
     double progress = (_currentStep + 1) / 4;
 
     return Scaffold(
@@ -50,7 +69,9 @@ class _AvatarScreenState extends State<AvatarScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: _buildCurrentStep(),
+                child: SingleChildScrollView(
+                  child: _buildCurrentStep(),
+                ),
               ),
             ),
 
@@ -62,7 +83,7 @@ class _AvatarScreenState extends State<AvatarScreen> {
     );
   }
 
-  // --- STEP BUILDERS ---
+  // --- STEP CONTENT BUILDERS ---
 
   Widget _buildCurrentStep() {
     switch (_currentStep) {
@@ -79,7 +100,7 @@ class _AvatarScreenState extends State<AvatarScreen> {
     }
   }
 
-  // STEP 1: GENDER SELECTION (Icons Removed)
+  // STEP 1: GENDER SELECTION
   Widget _buildGenderStep() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +116,6 @@ class _AvatarScreenState extends State<AvatarScreen> {
         ),
         const SizedBox(height: 40),
 
-        // Selectable Rectangles (No Icons passed)
         _buildGenderTile("Male"),
         const SizedBox(height: 15),
         _buildGenderTile("Female"),
@@ -180,47 +200,123 @@ class _AvatarScreenState extends State<AvatarScreen> {
         _buildMethodOption(
           id: 'measurements',
           title: "Enter Measurements",
-          subtitle: "More manual control (Height, Weight, etc).",
+          subtitle: "Detailed control (Height, Chest, etc).",
           icon: Icons.straighten,
         ),
       ],
     );
   }
 
-  // STEP 4: INPUT (Placeholder)
+  // STEP 4: DETAILED MEASUREMENTS FORM
   Widget _buildInputStep() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-              _selectedMethod == 'photo' ? Icons.camera_alt : Icons.straighten,
-              size: 80,
-              color: Colors.grey
-          ),
-          const SizedBox(height: 20),
-          Text(
-              _selectedMethod == 'photo'
-                  ? "Camera Interface Here"
-                  : "Measurements Form Here"
-          ),
-        ],
-      ),
+    if (_selectedMethod == 'photo') {
+      return _buildCameraMock();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Body Measurements",
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          "Accurate measurements ensure the best virtual fit.",
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+        const SizedBox(height: 30),
+
+        // --- BASIC STATS ---
+        _buildMeasurementSlider(
+          label: "Height",
+          value: _heightVal,
+          min: 140, max: 220,
+          unit: "cm",
+          onChanged: (val) => setState(() => _heightVal = val),
+        ),
+        const SizedBox(height: 20),
+
+        _buildMeasurementSlider(
+          label: "Weight",
+          value: _weightVal,
+          min: 40, max: 150,
+          unit: "kg",
+          onChanged: (val) => setState(() => _weightVal = val),
+        ),
+        const SizedBox(height: 20),
+
+        // --- DETAILED STATS ---
+        const Divider(color: Colors.grey),
+        const SizedBox(height: 20),
+
+        _buildMeasurementSlider(
+          label: "Chest Size",
+          value: _chestVal,
+          min: 70, max: 150,
+          unit: "cm",
+          onChanged: (val) => setState(() => _chestVal = val),
+        ),
+        const SizedBox(height: 20),
+
+        _buildMeasurementSlider(
+          label: "Waist Size",
+          value: _waistVal,
+          min: 50, max: 130,
+          unit: "cm",
+          onChanged: (val) => setState(() => _waistVal = val),
+        ),
+        const SizedBox(height: 20),
+
+        _buildMeasurementSlider(
+          label: "Shoulder Width",
+          value: _shoulderVal,
+          min: 30, max: 60,
+          unit: "cm",
+          onChanged: (val) => setState(() => _shoulderVal = val),
+        ),
+
+        const SizedBox(height: 40),
+
+        // --- SKIN TONE ---
+        const Text(
+          "Skin Tone",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 15),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: _skinTones.map((color) {
+            bool isSelected = _selectedSkinColor == color;
+            return GestureDetector(
+              onTap: () => setState(() => _selectedSkinColor = color),
+              child: Container(
+                width: 45,
+                height: 45,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: isSelected
+                      ? Border.all(color: Colors.blueAccent, width: 3)
+                      : Border.all(color: Colors.grey[800]!, width: 1),
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check, color: Colors.white, size: 20)
+                    : null,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
-  // --- WIDGET HELPER FUNCTIONS ---
+  // --- HELPER WIDGETS ---
 
-  // RECTANGLE TILE BUILDER (Updated: Removed Icon Parameter)
   Widget _buildGenderTile(String label) {
     bool isSelected = _selectedGender == label;
-
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedGender = label;
-        });
-      },
+      onTap: () => setState(() => _selectedGender = label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         decoration: BoxDecoration(
@@ -233,7 +329,6 @@ class _AvatarScreenState extends State<AvatarScreen> {
         ),
         child: Row(
           children: [
-            // REMOVED: Icon widget was here
             Text(
               label,
               style: TextStyle(
@@ -253,21 +348,12 @@ class _AvatarScreenState extends State<AvatarScreen> {
     );
   }
 
-  // Helper for Method Choice
   Widget _buildMethodOption({
-    required String id,
-    required String title,
-    required String subtitle,
-    required IconData icon
+    required String id, required String title, required String subtitle, required IconData icon
   }) {
     bool isSelected = _selectedMethod == id;
-
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedMethod = id;
-        });
-      },
+      onTap: () => setState(() => _selectedMethod = id),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -286,37 +372,66 @@ class _AvatarScreenState extends State<AvatarScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: Colors.white,
-                    ),
-                  ),
+                  Text(title, style: TextStyle(fontSize: 18, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: Colors.white)),
                   const SizedBox(height: 5),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[400],
-                    ),
-                  ),
+                  Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey[400])),
                 ],
               ),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: Colors.purpleAccent),
+            if (isSelected) const Icon(Icons.check_circle, color: Colors.purpleAccent),
           ],
         ),
       ),
     );
   }
 
-  // The Bottom "Next" Button Bar
+  Widget _buildMeasurementSlider({
+    required String label, required double value, required double min, required double max, required String unit, required Function(double) onChanged,
+  }) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            Text(
+              "${value.round()} $unit",
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+            ),
+          ],
+        ),
+        Slider(
+          value: value,
+          min: min,
+          max: max,
+          divisions: (max - min).toInt(),
+          activeColor: Colors.blueAccent,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCameraMock() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            height: 300,
+            width: double.infinity,
+            decoration: BoxDecoration(color: Colors.grey[900], borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey[800]!)),
+            child: const Icon(Icons.camera_alt, size: 60, color: Colors.grey),
+          ),
+          const SizedBox(height: 20),
+          const Text("Camera access would open here"),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBottomBar() {
     bool isNextEnabled = false;
-
     if (_currentStep == 0 && _selectedGender != null) isNextEnabled = true;
     if (_currentStep == 1) isNextEnabled = true;
     if (_currentStep == 2 && _selectedMethod != null) isNextEnabled = true;
@@ -333,29 +448,27 @@ class _AvatarScreenState extends State<AvatarScreen> {
             foregroundColor: Colors.white,
             disabledBackgroundColor: Colors.grey[900],
             disabledForegroundColor: Colors.grey[600],
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
           onPressed: isNextEnabled
               ? () {
             if (_currentStep < 3) {
-              setState(() {
-                _currentStep++;
-              });
+              setState(() { _currentStep++; });
             } else {
-              print("Finished: Gender=$_selectedGender, Age=${_selectedAge.round()}, Method=$_selectedMethod");
+              // Final Data Print
+              print("--- AVATAR DATA ---");
+              print("Gender: $_selectedGender");
+              print("Age: ${_selectedAge.round()}");
+              print("Height: ${_heightVal.round()}");
+              print("Chest: ${_chestVal.round()}");
+              print("Shoulder: ${_shoulderVal.round()}");
             }
           }
               : null,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                _currentStep == 3 ? "Create Avatar" : "Next",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              Text(_currentStep == 3 ? "Create Avatar" : "Next", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(width: 8),
               const Icon(Icons.arrow_forward_rounded, size: 24),
             ],

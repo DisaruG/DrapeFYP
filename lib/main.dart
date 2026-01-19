@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/wardrobe_screen.dart';
 import 'screens/avatar_screen.dart';
+import 'screens/studio_screen.dart';
 
 void main() {
   runApp(const DrapeApp());
@@ -40,8 +41,8 @@ class _MainWrapperState extends State<MainWrapper> {
   // For now, they are just simple placeholders with text.
   final List<Widget> _screens = [
     const WardrobeScreen(),
-    const Center(child: Text('Screen 2: Try-On Studio')),
-    const AvatarScreen(), // <--- WE CHANGED THIS LINE
+    const StudioScreen(), // <--- NEW SCREEN
+    const AvatarScreen(),
   ];
 
   @override
